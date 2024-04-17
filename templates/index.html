@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>data</h1>
+    <div class="menu">
+        {% for row in table %}
+        <li>
+            {{ row[0]}}-
+            {{ row[1]}}-
+            {{ row[2]}}-
+            {{ row[3]}}-
+            {{ row[4]}}-
+            {{ row[5]}}
+        </li>
+        {% endfor %}
+    </div>
+</body>
+</html>
