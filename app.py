@@ -17,12 +17,14 @@ def sanpham():  # put application's code here
     items_list = []
     for item in items:
         items_list.append(
-            {'product_id': item[0],
-             'product_name': item[1],
-             'quantity': item[2],
-             'price': item[3],
-             'img': item[4],
-             'product_type': item[5]}
+            {
+                'product_id': item[0],
+                'product_name': item[1],
+                'quantity': item[2],
+                'price': item[3],
+                'img': item[4],
+                'product_type': item[5]
+            }
         )
     return jsonify(items_list)
 
@@ -37,15 +39,11 @@ def searchProductName(search_text):
         return items
 
 
-@app.route('/searchData', methods=["POST", "get"])
+@app.route('/searchData', methods=["POST"])
 def searchData():
-    try:
-        search_text = request.json.get('search_text')
-        result = searchProductName(search_text)
-        return jsonify(result)
-    except KeyError:
-        flash('Search term is missing. Please enter a search term.', 'warning')
-        return render_template('searchData.html')
+    search_text = request.json.get('search_text')
+    result = searchProductName(search_text)
+    return jsonify(result)
 
 
 @app.route('/searchType', methods=["post", "get"])
@@ -83,19 +81,19 @@ def adminView():
     cur.execute('SELECT * FROM sanpham')
     items = cur.fetchall()
     conn.close()
-    return render_template('adminView.html', table=items)
+    return jsonify(items)
 
 
 @app.route('/adminAdd', methods=['POST', 'get'])
 def adminAdd():
     conn = sqlite3.connect(sqldb_sanpham)
     cur = conn.cursor()
-    id = request.form.get('product_id')
-    name = request.form.get('product_name')
-    quantity = request.form.get('quantity')
-    price = request.form.get('price')
-    img = request.form.get('img')
-    type = request.form.get('product_type')
+    id = request.json.get('product_id')
+    name = request.json.get('product_name')
+    quantity = request.json.get('quantity')
+    price = request.json.get('price')
+    img = request.json.get('img')
+    type = request.json.get('product_type')
     if id and name and quantity and price and img and type:
         cur.execute(
             'INSERT INTO sanpham (product_id, product_name, quantity, price, img, product_type) '
@@ -103,43 +101,39 @@ def adminAdd():
         )
         conn.commit()
         return redirect(url_for('adminView'))
-    return render_template('adminAdd.html')
 
 
-@app.route('/adminUpdate/<item_id>', methods=['GET', 'post'])
-def adminUpdate(item_id):
-    if request.method == "GET":
+@app.route('/adminUpdate/<product_id>', methods=['put', 'post'])
+def adminUpdate(product_id):
+    if request.method == 'PUT':
         conn = sqlite3.connect(sqldb_sanpham)
         cur = conn.cursor()
-        cur.execute('SELECT * FROM sanpham where product_id = ?', (item_id,))
+        name = request.json.get('product_name')
+        quantity = request.json.get('quantity')
+        price = request.json.get('price')
+        img = request.json.get('img')
+        if name and quantity and price and img:
+            print('yes')
+        else:
+            print('no')
+        if name and quantity and price and img:
+            cur.execute('update sanpham set product_name=?, quantity=?, price=?, img=? where product_id=?', (name, quantity, price, img, product_id))
+            conn.commit()
+            if cur.rowcount > 0:
+                return jsonify('updated')
+            else:
+                return 'error', 404
+        else:
+            return 'info required', 400
+    elif request.method == 'POST':
+        conn = sqlite3.connect(sqldb_sanpham)
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM sanpham where product_id = ?', (product_id,))
         item = cur.fetchone()
         conn.close()
+        return jsonify(item)
 
-        if item is None:
-            flash('Item not found.', 'warning')
-            return redirect(url_for('adminView'))
-
-        return render_template('adminUpdate.html', item=item)
-    elif request.method == "POST":
-        name = request.form.get('product_name')
-        quantity = request.form.get('quantity')
-        price = request.form.get('price')
-        img = request.form.get('img')
-        conn = sqlite3.connect(sqldb_sanpham)
-        cur = conn.cursor()
-        cur.execute(
-            'update sanpham set product_name = ?, quantity = ?, price = ?, img = ? where product_id = ?',
-            (name, quantity, price, img, item_id)
-        )
-        conn.commit()
-        conn.close()
-
-        flash('Item updated.', 'success')
-        return redirect(url_for('adminView'))
-    return render_template('adminUpdate.html')
-
-
-@app.route('/adminDelete/<item_id>', methods=['post'])
+@app.route('/adminDelete/<product_id>', methods=['post'])
 def adminDelete(item_id):
     conn = sqlite3.connect(sqldb_sanpham)
     cur = conn.cursor()
