@@ -103,35 +103,28 @@ def adminAdd():
         return redirect(url_for('adminView'))
 
 
-@app.route('/adminUpdate/<product_id>', methods=['put', 'post'])
-def adminUpdate(product_id):
-    if request.method == 'PUT':
-        conn = sqlite3.connect(sqldb_sanpham)
-        cur = conn.cursor()
-        name = request.json.get('product_name')
-        quantity = request.json.get('quantity')
-        price = request.json.get('price')
-        img = request.json.get('img')
-        if name and quantity and price and img:
-            print('yes')
-        else:
-            print('no')
-        if name and quantity and price and img:
-            cur.execute('update sanpham set product_name=?, quantity=?, price=?, img=? where product_id=?', (name, quantity, price, img, product_id))
-            conn.commit()
-            if cur.rowcount > 0:
-                return jsonify('updated')
-            else:
-                return 'error', 404
-        else:
-            return 'info required', 400
-    elif request.method == 'POST':
-        conn = sqlite3.connect(sqldb_sanpham)
-        cur = conn.cursor()
-        cur.execute('SELECT * FROM sanpham where product_id = ?', (product_id,))
-        item = cur.fetchone()
-        conn.close()
-        return jsonify(item)
+# @app.route('/adminUpdate/<product_id>', methods=['put', 'post'])
+# def adminUpdate(product_id):
+#     if request.method == 'PUT':
+#         conn = sqlite3.connect(sqldb_sanpham)
+#         cur = conn.cursor()
+#         name = request.json.get('product_name')
+#         quantity = request.json.get('quantity')
+#         price = request.json.get('price')
+#         img = request.json.get('img')
+#         if name and quantity and price and img:
+#             cur.execute('update sanpham set product_name=?, quantity=?, price=?, img=? where product_id=?', (name, quantity, price, img, product_id))
+#             conn.commit()
+#             return redirect('/adminView')
+#         else:
+#             return 'info required', 400
+#     elif request.method == 'POST':
+#         conn = sqlite3.connect(sqldb_sanpham)
+#         cur = conn.cursor()
+#         cur.execute('SELECT * FROM sanpham where product_id = ?', (product_id,))
+#         item = cur.fetchone()
+#         conn.close()
+#         return jsonify(item)
 
 @app.route('/adminDelete/<product_id>', methods=['post'])
 def adminDelete(item_id):
